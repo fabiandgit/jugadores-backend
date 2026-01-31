@@ -29,12 +29,14 @@ public class Jugador {
     @Column(nullable = false)
     private String apellido;
 
-    @Column(name = "fecha_nacimiento")
+    @Column(name = "fecha_nacimiento", nullable = false)
     private LocalDate fechaNacimiento;
 
+    @Column(nullable = false)
     private String nacionalidad;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Posicion posicion;
 
     @Column(name = "valor_mercado", precision = 15, scale = 2)
@@ -43,13 +45,21 @@ public class Jugador {
     @Column(name = "foto_url")
     private String fotoUrl;
 
-    // Relaciones
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean activo = true;
+    // ==========================
+    // RELACIONES (NO NULL)
+
+    @Builder.Default
     @OneToMany(mappedBy = "jugador", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JugadorEquipo> equipos = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "jugador", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JugadorTitulo> titulos = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "jugador", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JugadorPremio> premios = new ArrayList<>();
 

@@ -3,8 +3,7 @@ package com.infoplayer.jugadores.mappers;
 
 import com.infoplayer.jugadores.dtos.*;
 import com.infoplayer.jugadores.entities.Jugador;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -38,6 +37,17 @@ public interface JugadorMapper {
             expression = "java(mapPremios(jugador))"
     )
     JugadorDTO toDTO(Jugador jugador);
+
+    // ===== DTO ENTRADA (CREATE) =====
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "equipos", ignore = true)
+    @Mapping(target = "titulos", ignore = true)
+    @Mapping(target = "premios", ignore = true)
+    Jugador toEntity(JugadorCreateDTO dto);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntityFromDto(JugadorUpdateDTO dto, @MappingTarget Jugador jugador);
+
 
     // ==========================
     // MÉTODOS AUXILIARES
@@ -91,5 +101,4 @@ public interface JugadorMapper {
                         .build())
                 .toList();
     }
-
 }

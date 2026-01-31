@@ -2,6 +2,7 @@ package com.infoplayer.jugadores.repository;
 
 import com.infoplayer.jugadores.entities.*;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,10 +14,11 @@ import java.util.Optional;
 public interface JugadorRepository extends JpaRepository <Jugador, Long> {
 
     // 🔍 Buscar por nombre o apellido (case insensitive)
-    List<Jugador> findByNombreContainingIgnoreCaseOrApellidoContainingIgnoreCase(
-            String nombre,
-            String apellido
-    );
+    List<Jugador> findByActivoTrueAndNombreContainingIgnoreCaseOrActivoTrueAndApellidoContainingIgnoreCase(String nombre, String apellido );
+
+    List<Jugador> findByActivoTrue();
+
+    Optional<Jugador> findByIdAndActivoTrue(Long id);
 
     // ⚽ Equipo actual del jugador
     @Query("""
@@ -56,12 +58,22 @@ public interface JugadorRepository extends JpaRepository <Jugador, Long> {
 
     // 🔥 Query PRO: jugador + todo cargado
     @Query("""
-        SELECT DISTINCT j
-        FROM Jugador j
-        LEFT JOIN FETCH j.equipos
-        LEFT JOIN FETCH j.titulos
-        LEFT JOIN FETCH j.premios
-        WHERE j.id = :id
-    """)
+    SELECT DISTINCT j
+    FROM Jugador j
+    LEFT JOIN FETCH j.equipos
+    LEFT JOIN FETCH j.titulos
+    LEFT JOIN FETCH j.premios
+    WHERE j.id = :id
+      AND j.activo = true
+""")
     Optional<Jugador> findByIdWithDetails(@Param("id") Long id);
+
+    @Modifying
+    @Query("""
+    UPDATE Jugador j
+    SET j.activo = false
+    WHERE j.id = :id
+""")
+    void softDelete(@Param("id") Long id);
+
 }

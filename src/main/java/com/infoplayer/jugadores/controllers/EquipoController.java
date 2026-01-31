@@ -22,9 +22,7 @@ public class EquipoController {
     // 📄 Info del equipo por nombre
     // GET /api/equipos/{nombre}
     @GetMapping("/{nombre}")
-    public ResponseEntity<EquipoDTO> obtenerEquipo(
-            @PathVariable String nombre
-    ) {
+    public ResponseEntity<EquipoDTO> obtenerEquipo(@PathVariable String nombre ) {
         return ResponseEntity.ok(
                 equipoService.obtenerEquipoPorNombre(nombre)
         );
@@ -33,9 +31,7 @@ public class EquipoController {
     // ⚽ Jugadores actuales del equipo
     // GET /api/equipos/{id}/jugadores
     @GetMapping("/{id}/jugadores")
-    public ResponseEntity<List<JugadorDTO>> obtenerJugadores(
-            @PathVariable Long id
-    ) {
+    public ResponseEntity<List<JugadorDTO>> obtenerJugadores(@PathVariable Long id) {
         return ResponseEntity.ok(
                 equipoService.obtenerJugadoresActuales(id)
         );
