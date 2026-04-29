@@ -2,19 +2,19 @@ package com.infoplayer.jugadores.controllers;
 
 import com.infoplayer.jugadores.dtos.EquipoDTO;
 import com.infoplayer.jugadores.dtos.JugadorDTO;
+import com.infoplayer.jugadores.dtos.LigaDTO;
 import com.infoplayer.jugadores.service.EquipoService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/equipos")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class EquipoController {
 
     private final EquipoService equipoService;
@@ -34,6 +34,19 @@ public class EquipoController {
     public ResponseEntity<List<JugadorDTO>> obtenerJugadores(@PathVariable Long id) {
         return ResponseEntity.ok(
                 equipoService.obtenerJugadoresActuales(id)
+        );
+    }
+
+    @GetMapping("/ligas")
+    public ResponseEntity<List<LigaDTO>> listarLIgas() {
+        return ResponseEntity.ok(equipoService.listarLiga());
+    }
+
+    @GetMapping("/liga")
+    @Operation(summary = "Filtrar equipos por liga")
+    public ResponseEntity<List<EquipoDTO>> filtrarLiga(@RequestParam String liga) {
+        return ResponseEntity.ok(
+                equipoService.filtrarLiga(liga)
         );
     }
 }

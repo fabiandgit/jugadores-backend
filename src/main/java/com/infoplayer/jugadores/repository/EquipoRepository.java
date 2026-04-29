@@ -3,6 +3,7 @@ package com.infoplayer.jugadores.repository;
 import com.infoplayer.jugadores.entities.DirectorTecnico;
 import com.infoplayer.jugadores.entities.Equipo;
 import com.infoplayer.jugadores.entities.Jugador;
+import com.infoplayer.jugadores.enums.Liga;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -33,4 +34,6 @@ public interface EquipoRepository extends JpaRepository<Equipo, Long> {
           AND dte.fechaFin IS NULL
     """)
     Optional<DirectorTecnico> findDirectorTecnicoActual(@Param("equipoId") Long equipoId);
+
+    List<Equipo> findByLiga(Liga liga);
 }

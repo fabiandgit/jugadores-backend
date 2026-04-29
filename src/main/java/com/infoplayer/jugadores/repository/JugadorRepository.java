@@ -14,7 +14,19 @@ import java.util.Optional;
 public interface JugadorRepository extends JpaRepository <Jugador, Long> {
 
     // 🔍 Buscar por nombre o apellido (case insensitive)
-    List<Jugador> findByActivoTrueAndNombreContainingIgnoreCaseOrActivoTrueAndApellidoContainingIgnoreCase(String nombre, String apellido );
+    //List<Jugador> findByActivoTrueAndNombreContainingIgnoreCaseOrActivoTrueAndApellidoContainingIgnoreCase(String nombre, String apellido );
+    @Query("""
+       SELECT j FROM Jugador j
+       WHERE j.activo = true
+       AND (
+            LOWER(j.nombre) LIKE LOWER(CONCAT('%', :termino, '%'))
+            OR LOWER(j.apellido) LIKE LOWER(CONCAT('%', :termino, '%'))
+            OR LOWER(CONCAT(j.nombre, ' ', j.apellido)) 
+               LIKE LOWER(CONCAT('%', :termino, '%'))
+       )
+       """)
+    List<Jugador> buscarPorTermino(@Param("termino") String termino);
+
 
     List<Jugador> findByActivoTrue();
 
@@ -58,13 +70,10 @@ public interface JugadorRepository extends JpaRepository <Jugador, Long> {
 
     // 🔥 Query PRO: jugador + todo cargado
     @Query("""
-    SELECT DISTINCT j
-    FROM Jugador j
-    LEFT JOIN FETCH j.equipos
-    LEFT JOIN FETCH j.titulos
-    LEFT JOIN FETCH j.premios
-    WHERE j.id = :id
-      AND j.activo = true
+SELECT j
+FROM Jugador j
+WHERE j.id = :id
+  AND j.activo = true
 """)
     Optional<Jugador> findByIdWithDetails(@Param("id") Long id);
 

@@ -1,21 +1,17 @@
 package com.infoplayer.jugadores.service;
 
-import com.infoplayer.jugadores.dtos.AsignarEquipoDTO;
-import com.infoplayer.jugadores.dtos.JugadorCreateDTO;
-import com.infoplayer.jugadores.dtos.JugadorDTO;
-import com.infoplayer.jugadores.dtos.JugadorUpdateDTO;
-import com.infoplayer.jugadores.entities.Equipo;
-import com.infoplayer.jugadores.entities.Jugador;
-import com.infoplayer.jugadores.entities.JugadorEquipo;
+import com.infoplayer.jugadores.dtos.*;
+import com.infoplayer.jugadores.entities.*;
+import com.infoplayer.jugadores.enums.Posicion;
 import com.infoplayer.jugadores.mappers.JugadorMapper;
-import com.infoplayer.jugadores.repository.EquipoRepository;
-import com.infoplayer.jugadores.repository.JugadorRepository;
+import com.infoplayer.jugadores.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -25,8 +21,13 @@ public class JugadorServiceImpl implements JugadorService{
     private final JugadorRepository jugadorRepository;
     private final EquipoRepository equipoRepository;
     private final JugadorMapper jugadorMapper;
+    private final TituloRepository tituloRepository;
+    private final JugadorTituloRepository jugadorTituloRepository;
+    private final PremioRepository premioRepository;
+    private final JugadorPremioRepository jugadorPremioRepository;
 
     @Override
+    @Transactional
     public JugadorDTO obtenerJugadorPorId(Long id) {
         Jugador jugador = jugadorRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -52,11 +53,17 @@ public class JugadorServiceImpl implements JugadorService{
             return listarJugadores();
         }
 
-        return jugadorRepository
+        //primera opcion
+       /* return jugadorRepository
                 .findByActivoTrueAndNombreContainingIgnoreCaseOrActivoTrueAndApellidoContainingIgnoreCase(
                         termino,
                         termino
                 )
+                .stream()
+                .map(jugadorMapper::toDTO)
+                .toList();*/
+        //segunda opcion
+        return jugadorRepository.buscarPorTermino(termino)
                 .stream()
                 .map(jugadorMapper::toDTO)
                 .toList();
@@ -84,7 +91,7 @@ public class JugadorServiceImpl implements JugadorService{
                         "Equipo no encontrado con id: " + dto.getEquipoId()
                 ));
 
-        // 1️⃣ Cerrar equipo actual si existe
+        // 1️⃣ Crear equipo actual si existe
         jugador.getEquipos().stream()
                 .filter(je -> je.getFechaFin() == null)
                 .findFirst()
@@ -152,4 +159,57 @@ public class JugadorServiceImpl implements JugadorService{
         return jugadorMapper.toDTO(jugadorRepository.save(jugador));
     }
 
+    @Override
+    public List<PosicionDTO> listarPosiciones() {
+        return Arrays.stream(Posicion.values())
+                .map(p -> new PosicionDTO(
+                        p.name(),
+                        p.name().substring(0,1) + p.name().substring(1)
+                ))
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public void agregarTituloJugador(Long id, AsignarTituloJugadorDto dto) {
+
+        // 1️⃣ Validar jugador (esto sí es obligatorio)
+        Jugador jugador = jugadorRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Jugador no encontrado con id: " + id
+                ));
+
+        // 2️⃣ Referencia del título SIN hacer query
+        Titulo tituloRef = tituloRepository.getReferenceById(dto.getIdTitulo());
+
+        // 3️⃣ Crear relación
+        JugadorTitulo jugadorTitulo = JugadorTitulo.builder()
+                .jugador(jugador)
+                .titulo(tituloRef)
+                .anio(dto.getFechaTitulo())
+                .build();
+
+        // 4️⃣ Guardar
+        jugadorTituloRepository.save(jugadorTitulo);
+    }
+
+    @Override
+    @Transactional
+    public void agregarPremioJugador(Long id, AsignarPremioJugadorDto dto){
+
+        Jugador jugador = jugadorRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Jugador no encontrado con id: " + id
+                ));
+
+        Premio premioRef = premioRepository.getReferenceById(dto.getIdPremio());
+
+        JugadorPremio jugadorPremio = JugadorPremio.builder()
+                .jugador(jugador)
+                .premio(premioRef)
+                .anio(dto.getFechaPremio())
+                .build();
+
+        jugadorPremioRepository.save(jugadorPremio);
+    }
 }
